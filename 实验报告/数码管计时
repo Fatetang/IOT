@@ -1,0 +1,29 @@
+#include <SevenSegmentExtended.h>
+#include <SevenSegmentTM1637.h>
+
+SevenSegmentExtended  display(7,8);
+volatile int minute;
+volatile int second;
+
+void setup(){
+  minute = 0;
+  second = 0;
+  display.begin();
+}
+
+void loop(){
+  display.printTime(minute,second,HIGH);
+  delayMicroseconds(1);
+  if (second == 59 && minute == 59) { //分和秒都达到59后归0
+    second = 0;
+    minute = 0;
+
+  } else if (second == 59) {//秒达到59后归0，分进1
+    second = 0;
+    minute = minute + 1;
+  } else {//秒进1
+    second = second + 1;
+
+  }
+
+}
