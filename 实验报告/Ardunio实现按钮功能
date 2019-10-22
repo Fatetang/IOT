@@ -1,0 +1,47 @@
+volatile byte LED;
+volatile boolean LastState;
+volatile byte SW;
+volatile boolean Toggle;
+volatile boolean b1;
+volatile boolean b2;
+volatile int click;
+
+int mixly_digitalRead(uint8_t pin) {
+  pinMode(pin, INPUT);
+  return digitalRead(pin);
+}
+
+void setup(){
+  LED = 11;//赋值LED接11号数字管脚
+  SW = 8;//按钮接8号数字管脚
+  LastState = true;
+  Toggle = true;
+  b1 = true;
+  b2 = true;
+  click = 0;
+  Serial.begin(9600);
+  LastState = mixly_digitalRead(SW);//获取按钮初始状态，电平为高1
+  Serial.println(LastState);
+}
+
+void loop(){
+  b1 = mixly_digitalRead(SW);//获取当前按钮状态
+  Serial.println(b1);
+  if (b1 != LastState) {//判断当前按钮状态和最后的状态是否相等
+    delay(20);//去抖动，判断按钮是否真的被按下
+    b2 = mixly_digitalRead(SW);
+    if (b2 == b1) {
+      LastState = b1;
+      click = click + 1;//按钮被按下，计数加1
+    }
+
+  }
+  if (click == 2) {//判断按下两次
+    click = 0;
+    Toggle = !Toggle;
+    pinMode(LED, OUTPUT);//控制LED的11号数字管脚电平高低
+    digitalWrite(LED,Toggle);
+
+  }
+
+}
