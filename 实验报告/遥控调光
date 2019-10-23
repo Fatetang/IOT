@@ -1,0 +1,47 @@
+#include <IRremote.h>
+
+IRrecv irrecv_7(7);
+decode_results results_7;
+
+long ir_item;
+volatile int led;
+volatile int ledstate;
+
+void setup(){
+  led = 0;
+  ledstate = 0;
+  Serial.begin(9600);
+  irrecv_7.enableIRIn();
+}
+
+void loop(){
+  if (irrecv_7.decode(&results_7)) {
+    ir_item=results_7.value;
+    String type="UNKNOWN";
+    String typelist[14]={"UNKNOWN", "NEC", "SONY", "RC5", "RC6", "DISH", "SHARP", "PANASONIC", "JVC", "SANYO", "MITSUBISHI", "SAMSUNG", "LG", "WHYNTER"};
+    if(results_7.decode_type>=1&&results_7.decode_type<=13){
+      type=typelist[results_7.decode_type];
+    }
+    Serial.print("IR TYPE:"+type+"  ");
+    Serial.println(ir_item,HEX);//打印红外接收信号
+    if (ir_item == 0x511DBB) {
+      ledstate = !ledstate;
+      led = ledstate * 128;
+
+    }
+    Serial.println(led);//打印灯的亮度值
+    analogWrite(10,led);
+    if (ledstate == 1) {
+      if (ir_item == 0xEE886D7F) {
+        led = constrain(led + 20, 0, 255);
+
+      } else if (ir_item == 0xE318261B) {
+        led = constrain(led - 20, 5, 255);
+      }
+
+    }
+    irrecv_7.resume();
+  } else {
+  }
+
+}
