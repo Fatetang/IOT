@@ -1,0 +1,66 @@
+#include <RFID.h>
+#include <SPI.h>
+#include <Servo.h>
+
+String RC;//记录卡号
+RFID rfid(10,5);
+unsigned char RC_size;
+unsigned char blockAddr;        //选择操作的块地址0～63
+unsigned char i,tmp;
+unsigned char status;
+unsigned char str[MAX_LEN];
+Servo servo_8;
+char * carid[]={"20a3b4ac2","60f1d4ad6"};//卡号
+
+char * name[]={"pan","zeng"};//对应的姓名
+
+String RFID_readcardnum() {
+
+ rfid.readCardSerial();
+  String stringserNum=String(rfid.serNum[0], HEX)+String(rfid.serNum[1], HEX)+String(rfid.serNum[2], HEX)+String(rfid.serNum[3], HEX)+String(rfid.serNum[4], HEX);
+      //选卡，返回卡容量（锁定卡片，防止多次读写）
+      rfid.selectTag(rfid.serNum);
+  return stringserNum;
+}
+
+//4字节卡序列号，第5字节为校验字节
+//新扇区A密码，16个扇区，每个扇区密码6Byte
+unsigned char sectorNewKeyA[16][16] = {
+ {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
+ {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xff,0x07,0x80,0x69, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
+ {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xff,0x07,0x80,0x69, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},};
+unsigned char serNum[5];
+//写卡数据
+//原扇区A密码，16个扇区，每个扇区密码6Byte
+unsigned char sectorKeyA[16][16] = {
+ {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
+ {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
+ {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},};
+
+void setup(){
+  RC = "";
+  Serial.begin(9600);
+  SPI.begin();
+  rfid.init();
+  Serial.begin(9600);
+  servo_8.attach(8);
+}
+
+void loop(){
+  if ( rfid.isCard()  ) {//判断RFID识别信号
+    Serial.println(RC);
+    RC = RFID_readcardnum();//读取到的卡号赋值给RC
+    for (int i = (1); i <= (sizeof(carid)/sizeof(carid[0])); i = i + (1)) {//循环读取数组中的信息
+      if (RC == carid[(int)(i - 1)]) {//将数组中的信息与读取的卡号比较
+        Serial.println(name[(int)(i - 1)]);
+        servo_8.write(90);//舵机转动
+        delay(3000);
+        servo_8.write(0);//复原
+        delay(0);
+        break;
+
+      }
+    }
+  }
+
+}
