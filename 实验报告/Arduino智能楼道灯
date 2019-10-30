@@ -1,0 +1,19 @@
+void setup(){
+  pinMode(5, INPUT);
+  Serial.begin(9600);
+  pinMode(8, OUTPUT);
+}
+
+void loop(){
+  Serial.println(digitalRead(5));//打印人体红外模块接收到的数据
+  Serial.println(analogRead(A1));//打印声音传感器接收到的数据
+  if (analogRead(A1) > 60 || digitalRead(5) == 1) {//当声音大于60分贝或者检测人体灯亮
+    digitalWrite(8,HIGH);
+    delay(10000);
+
+  } else {//没人，没声音，灯灭
+    digitalWrite(8,LOW);
+
+  }
+
+}
