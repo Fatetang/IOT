@@ -1,0 +1,23 @@
+#include <LiquidCrystal_SoftI2C.h>
+#include <SoftI2CMaster.h>
+
+volatile int LED;
+LiquidCrystal_SoftI2C mylcd(0x27,16,2,A3,A1);
+
+void setup(){
+  LED = 0;
+  mylcd.init();
+  mylcd.backlight();
+  Serial.begin(9600);
+}
+
+void loop(){
+  LED = (map(analogRead(A0), 0, 1023, 0, 255));
+  Serial.println(LED);
+  analogWrite(11,LED);
+  mylcd.setCursor(0, 0);
+  mylcd.print("2017764520");
+  mylcd.setCursor(0, 1);
+  mylcd.print(String("LED: ") + String(String(LED) + String(" ")));//不加空格会显示异常，无法归零
+
+}
